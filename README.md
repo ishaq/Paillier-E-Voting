@@ -3,14 +3,14 @@ E-Voting scheme that utilizes Paillier Encryption and its additive homomorphic p
 
 ## paillier.py & primes.py
 
-# Voter.py
+## Voter.py
 
-# Registrar.py
+## Registrar.py
 
-# Ballot.py
+## Ballot.py
 
-# VoteMain.py
+## VoteMain.py
 Run
 
-# init.py
+## init.py
 Set up needed parameters/info for a demo
