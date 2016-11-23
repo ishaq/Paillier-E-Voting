@@ -9,8 +9,5 @@ E-Voting scheme that utilizes Paillier Encryption and its additive homomorphic p
 
 ## Ballot.py
 
-## VoteMain.py
-Run
-
 ## init.py
 Set up needed parameters/info for a demo
