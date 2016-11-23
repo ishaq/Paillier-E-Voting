@@ -1,66 +1,57 @@
-# Voter Class
-##############
-# Will "talk" with the registrar
-# Will encrypt its own vote
-# Will do the Zero Knowledge Proof with the Counter
-
-import math
-from Paillier import encrypt
+# Simple Voter
+import Crypto
 from Crypto import Random
 from Crypto.Random import random
 
-class Voter:
-    def __init__(self, iden):
-        ''' 
-        Initialize the voter.
-        Arguments: ID
-        Return Value: None
+from paillier import *
 
-        Initialize the 'id' of the voter
-        '''
-        self.identity = iden
+import os, socket, sys
 
-    def e_vote(self, vote):
-        '''
-        Use PaillierVote encrypt to encrypt vote.
-        '''
-        return encrypt(vote)
-    
-    def blind_sig(self, vote):
-        pass
-        
-    def zkp(self, vote):
-        pass
+def vote():
+   host = "0.0.0.0"
+   reg_port = 1234
+   serv_port = 9876
 
-
-    def vote(self):
-        pass
-
-# The following will be changed to a method. 
-
-# The identities will be kept by registrar.
-if __name__  == '__main__':
-    identities = []
-    while True:
-        # Keep track of voters
-        iden = raw_input('What is your voter id? ')
-        if iden in identities:
-            print 'You have already voted!'
-            print
-            continue
-        # Command to finish voting
-        elif iden == 'exit':
-            print
-            break
-        # Vote
-        else:
-            voter = Voter(iden)
-            vote = raw_input('Vote: ')
-            c = encrypt(vote)
-            # Blind Sig
-            # Send encrypted vote c to the ballot
-            # Do zero knowledge proof
-            identities.append(iden)
-            print c
-            print
-
+   # speak with the registrar first
+   registrar = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   registrar.connect((host, reg_port))
+   print registrar.recv(1024)
+   id = raw_input("Name: ")
+   registrar.send(str(id))
+   # Recieve a key to vote?
+   
+   
+   # speak with ballot
+   server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   server.connect((host, serv_port))
+   
+   # Send key to vote?
+   vote = raw_input("Your vote: ")
+   #encrypted_vote = encrypt(vote)
+   # public key is 
+   f1 = open('publickey.txt', 'r')
+   n = f1.read()
+   f1.close() 
+   pub_key = PublicKey(long(n))
+   e_vote = encrypt(pub_key, long(vote))
+   
+   
+   # get vote signed by registrar
+   
+   # test
+   print
+   #print "You voted: " + vote
+   #print "Encrypted: " + str(e_vote)
+   
+   server.send(str(e_vote))
+   
+   # Read in the acknowledgement
+   print server.recv(1024)
+   print
+   server.close
+   registrar.close()
+   
+if __name__ == "__main__":
+   vote()
+   
+   
