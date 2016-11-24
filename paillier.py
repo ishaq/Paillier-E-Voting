@@ -3,6 +3,7 @@
 # https://github.com/mikeivanov/paillier/
 
 import math
+import fractions
 import primes
 
 def invmod(a, p, maxiter=1000000):
@@ -54,7 +55,7 @@ class PublicKey(object):
     def __init__(self, n):
         self.n = n
         self.n_sq = n * n
-        self.g = n + 1
+        self.g = self.n + 1
 
     def __repr__(self):
         return '<PublicKey: %s>' % self.n
@@ -65,13 +66,16 @@ def generate_keypair(bits):
     n = p * q
     return PrivateKey(p, q, n), PublicKey(n)
 
-def encrypt(pub, plain):
+def get_x(pub):
     while True:
         r = primes.generate_prime(long(round(math.log(pub.n, 2))))
-        if r > 0 and r < pub.n:
+        if r > 0 and r < pub.n and (fractions.gcd(r, pub.n) == 1):
             break
-    x = pow(r, pub.n, pub.n_sq)
-    cipher = (pow(pub.g, plain, pub.n_sq) * x) % pub.n_sq
+    x = r
+    return x
+
+def encrypt(pub, x, plain):
+    cipher = (pow(pub.g, plain, pub.n_sq) * pow(x, pub.n, pub.n_sq)) % pub.n_sq
     return cipher
 
 def e_add(pub, a, b):
@@ -83,7 +87,7 @@ def e_add_const(pub, a, n):
     return a * modpow(pub.g, n, pub.n_sq) % pub.n_sq
 
 def e_mul_const(pub, a, n):
-    """Multiplies an ancrypted integer by a constant"""
+    """Multiplies an encrypted integer by a constant"""
     return modpow(a, n, pub.n_sq)
 
 def decrypt(priv, pub, cipher):
