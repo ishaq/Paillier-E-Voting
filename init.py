@@ -22,8 +22,7 @@ f2.close()
 ####################################
 
 # Create and store hashes of verified voters
-voters = ['Bulent Yener', 'Edward McCorry', 'Branden Clark', 'Daniel Park', 
-          'Anthony Ferritto', 'Andrew Yale', 'Aritra Chowdhury', 'Haidar Khan']
+voters = ['a', 'b', 'c', 'd', 'e', 'f']
 f = open('hashes.txt', 'w')
 count = 0
 for person in voters:
