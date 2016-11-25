@@ -3,6 +3,7 @@
 import Crypto
 from Crypto import Random
 from Crypto.Random import random
+from Crypto.PublicKey import RSA
 from Crypto.Random.random import getrandbits
 
 from paillier import *
@@ -19,16 +20,27 @@ lenw = 128
 def run_server():
    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    host = "0.0.0.0"
-   port = 9876 #hard coded in currently
+   port = 9876 # hard coded in currently
    
    sock.bind((host, port))
    sock.listen(5)
    print "Server running"
    
+   # Buffer Size
    buff = 1024
+   # Number of voters so far
    count = 0
+
+   # Change the following to run indefinately and count when
+   #  another counting authoring says so?
    total_voters = 3
    
+
+   # Following section will probably be changed so the Counting Authority
+   #  only has the secret key and decryption. So Ballot will write encrypted
+   #   total to a file for the counting authority to read.
+
+   # Retrieve secret key for decryption
    f2 = open('secretkey.txt', 'r')
    data = f2.read().split()
    f2.close()
@@ -46,33 +58,47 @@ def run_server():
       # Connection from voter
       voter,addr = sock.accept()
       
-      vote_data = voter.recv(voteSize) # change to recieve vote and signed vote. Currently only recieving one vote
-      vote_data = vote_data.strip()
+      # Retrieve encrypted vote
+      vote_data = voter.recv(voteSize)
+      # Retrieve signed encyrpted vote
+      signed_vote_data = voter.recv(4000) # change to predetermined size
+      signed_vote_data = [long(signed_vote_data), None]
       
-      print vote_data
+      # load bs public key
+      f = open('regkey', 'r')
+      reg_pub = RSA.importKey(f.read())
+      f.close()
+      
+      # Verify signature
+      assert reg_pub.verify(vote_data, signed_vote_data)
+      # If true, continue, If false, close connection
+
+      vote_data = vote_data.strip()
       vote = long(vote_data)
       
-      #ZKP
+      ##################################
+      ##### Zero Knowledge Proofs ######
+      ##################################
+      # Simpler version based of Discrete Log Problem
       # send challenge
-      # for fun, let's choose a large A
       A = pub_key.n - 2
       e = long(getrandbits(64)) % A
-      # sent challenge
       voter.send(str(e))
-      # read in v and w
+      # read in response (v,w)
       v = long(voter.recv(lenv).strip())
       w = long(voter.recv(lenw).strip())
-
       # verify!
       zkp_check = pow(vote, e, pub_key.n_sq)
       u = pow(w, e * pub_key.n, pub_key.n_sq) * v % pub_key.n_sq
-      print u
-      print zkp_check
       if (u == zkp_check):
-         print "YES"
-      # if yes, do the following. if not, skip to after the count and send a invalid vote to voter and close.
+          # If true, continue, if false, close connection
+          print "YES"
       
-      # add up votes
+      
+      #################################
+      ## Homomorphically Tally Votes ##
+      #################################
+      
       if count == 0:
          encrypted_votes = vote
       else:
@@ -80,18 +106,22 @@ def run_server():
       
       voter.send("Thank you for voting.")
       voter.close()
-      
       count = count + 1
-      ##
+      
    
+   # Move later to Counting Authority #
    decrypted = decrypt(sec_key, pub_key, encrypted_votes)
-   
    print "Decrypted: " + str(decrypted)
    
 if __name__ == "__main__":
    run_server()
 
    
+      
+      
+      
+      
+
       
       
       
