@@ -1,11 +1,17 @@
-# Simple Voter
+# Voter
 import Crypto
 from Crypto import Random
 from Crypto.Random import random
+from Crypto.Random.random import getrandbits
+import fractions
 
 from paillier import *
 
 import os, socket, sys
+
+voteSize = 128
+lenv = 128
+lenw = 128
 
 def vote():
    host = "0.0.0.0"
@@ -33,17 +39,33 @@ def vote():
    n = f1.read()
    f1.close() 
    pub_key = PublicKey(long(n))
-   e_vote = encrypt(pub_key, long(vote))
+   x = get_x(pub_key)
+   e_vote = encrypt(pub_key, x, long(vote)) 
+   # pad the vote
+   s_vote = str(e_vote)
+   while (len(s_vote) < voteSize):
+      s_vote += " "
+   # ballot will need to unpad
+
+   server.send(s_vote) # send padded vote
    
+   # ZKP (one iteration)
+   # receive challenge
+   e = long(server.recv(1024))
+   a1 = pow(pub_key.g, e * long(vote), pub_key.n_sq)
+   a2 = x
    
-   # get vote signed by registrar
+   #pad v and w
+   v = str(a1)
+   while (len(v) < lenv):
+      v += " "
+   w = str(a2)
+   while (len(w) < lenw):
+      w += " "
    
-   # test
-   print
-   #print "You voted: " + vote
-   #print "Encrypted: " + str(e_vote)
+   server.send(v);
+   server.send(w);
    
-   server.send(str(e_vote))
    
    # Read in the acknowledgement
    print server.recv(1024)
