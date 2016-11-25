@@ -1,92 +1,120 @@
-# Registrar
-
+# Voter
 import Crypto
+from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Random import random
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
+from Crypto.Random.random import getrandbits
+import fractions
+
+from paillier import *
 
 import os, socket, sys
 
+signed_size = 320
+voteSize = 128
+lenv = 128
+lenw = 128
 
-bs_size = 320
-bvote_size = 128
+def vote():
+   host = "0.0.0.0"
+   reg_port = 1234
+   serv_port = 9876
 
-# Run as server
-# Initialize connection
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "0.0.0.0"
-port = 1234 #hard coded in currently
+   #############################
+   ###### Identification #######
+   #############################
+
+   registrar = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   registrar.connect((host, reg_port))
+   print registrar.recv(1024)
+   id = raw_input("Name: ")
+   registrar.send(str(id))
+   # Recieve a key to vote?
+
+
+   #############################
+   ########## Voting ###########
+   #############################
+
+   # speak with ballot
+   server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   server.connect((host, serv_port))
    
-sock.bind((host, port))
-sock.listen(5)
-print "registrar is open"
+   # Send key to vote?
+   vote = raw_input("Your vote: ")
+   # Retrieve public key 
+   f1 = open('publickey.txt', 'r')
+   n = f1.read()
+   f1.close() 
+   pub_key = PublicKey(long(n))
+   x = get_x(pub_key)
+   e_vote = encrypt(pub_key, x, long(vote)) 
+   # pad the vote
+   s_vote = str(e_vote)
+   while (len(s_vote) < voteSize):
+      s_vote += " "
 
-# Keep track of people who have voted already
-voted = []
-# Allowed to vote
-voters = []
-
-# Load in voters (hashes stored)
-f = open('hashes.txt', 'r')
-voters = f.read().split()
-
-# Generate key for the blind signatures
-priv = RSA.generate(1024)
-
-# Run Loop for getting and verifying voter's vote
-while True:
-   # Connection from voter
-   voter,addr = sock.accept()
-   voter.send("Welcome to the Registrar's Office.")
-   id = voter.recv(1024)
-   
-   # Generate key pair
-   #priv = RSA.generate(4096) # Not sure whether to keep this in here or out of the while loop
-   pub = priv.publickey()
-
-   # Write public key to file
-   f = open('regkey', 'w')
-   f.write(pub.exportKey())
+   ##############################
+   ###### Blind Signature #######
+   ##############################
+   f = open('regkey', 'r')
+   reg_pub = RSA.importKey(f.read())
    f.close()
+   # generate random bits
+   k  = random.randint(reg_pub.n >> 100, reg_pub.n)
+   # blind the vote
+   bvote = reg_pub.blind(s_vote, k)
 
-   # Hash id and check if matches any of the valid voters
-   h = SHA256.new()
-   h.update(id)
-   check = h.hexdigest()
+   # get blinded vote signed by registrar
+   registrar.send(bvote)
+
+   # recieve and unpad signed and unblind
+   bsigned_vote = registrar.recv(100000).strip() # change to predef size
+   signed_vote = reg_pub.unblind(long(bsigned_vote), k)
+   ddd = reg_pub.verify(s_vote, (signed_vote,))
+
+   # send to ballot 
+   server.send(s_vote) # send padded vote
+   server.send(str(signed_vote)) # send padded signed vote
    
-   # If matches up, then send verification
-   if check in voters:
-      print id + " is a registered voter."
-      # Check if registered voter has voted already
-      if check in voted:
-         # uh oh
-         # do something
-         print "Already voted"
-      else:
-         voted.append(check)
-      
-         ####################################
-         ######### Blind Signature ##########
-         ####################################
 
-         #bvote = voter.recv(bvote_size)
-         bvote = voter.recv(10000) # change to above? for predetermined size
-         
-         # signed vote
-         bs = str(priv.sign(bvote, 0)[0])
 
-         # send back signed blinded vote
-         # pad length of blinded signed vote to 320
-         while (len(bs) < bs_size):
-             bs += " "
-         
-         voter.send(bs)
-         voter.close()
+   ##############################
+   #### Zero Knowledge Proof ####
+   ##############################
 
-   else:
-      print id + " is not a registered voter."
-      # Do something   
-      
+   # ZKP (one iteration) Relies on discrete log problem
+   # receive challenge
+   e = long(server.recv(1024))
+   a1 = pow(pub_key.g, e * long(vote), pub_key.n_sq)
+   a2 = x
+   
+   #pad v and w
+   v = str(a1)
+   while (len(v) < lenv):
+      v += " "
+   w = str(a2)
+   while (len(w) < lenw):
+      w += " "
+   
+   server.send(v);
+   server.send(w);
+   
+   
+
+   ###############################
+   ############ DONE #############
+   ###############################
+
+   # Read in the acknowledgement
+   print server.recv(1024)
+   print
+   server.close
+   registrar.close()
+   
+if __name__ == "__main__":
+   vote()
+   
+   
+
 
