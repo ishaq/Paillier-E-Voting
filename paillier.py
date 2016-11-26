@@ -78,6 +78,10 @@ def encrypt(pub, x, plain):
     cipher = (pow(pub.g, plain, pub.n_sq) * pow(x, pub.n, pub.n_sq)) % pub.n_sq
     return cipher
 
+def encrypt_original(pub, plain):
+    x = get_x(pub)
+    return encrypt(pub, x, plain)
+
 def e_add(pub, a, b):
     """Add one encrypted integer to another"""
     return a * b % pub.n_sq
