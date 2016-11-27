@@ -6,5 +6,14 @@ Cleanup script. Removes state files used by EM and BB.
 
 import os
 
-os.remove("em.pickle")
-os.remove("bb.pickle")
+try:
+    os.remove("em.pickle")
+except FileNotFoundError:
+    pass
+
+try:
+    os.remove("bb.pickle")
+except FileNotFoundError:
+    pass
+
+print("DONE")
