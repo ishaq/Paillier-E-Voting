@@ -1,6 +1,9 @@
 from Crypto.Random import random
 from paillier import paillier
 
+import em
+
+
 def do_paillier_voting_simulation(candidates_count, voters_count):
     if not (voters_count > candidates_count):
         raise ValueError("voters_count needs to be greater than candidates_count")
@@ -13,7 +16,6 @@ def do_paillier_voting_simulation(candidates_count, voters_count):
     key_size = 16 if (candidates_count * bits_per_candidate) < 16 else (candidates_count * bits_per_candidate)
     print("key_size: {}, ({} bits per candidate)".format(key_size, bits_per_candidate))
     sk, pk = paillier.generate_keypair(key_size)
-
 
     # 2. Generate Initial Sum (this is done at BB, it has the pk of EM)
     initial_count = 0
@@ -51,7 +53,10 @@ def do_paillier_voting_simulation(candidates_count, voters_count):
         raise ArithmeticError("Paillier Voting Failed. Did not calculate correct vote counts")
 
 
-
 if __name__ == '__main__':
     # The project requirement was at least 5 candidates.
-    do_paillier_voting_simulation(10, 100)
+    # do_paillier_voting_simulation(10, 100)
+    # print("ALL_VOTERS: {}".format(config.ALL_VOTERS))
+    # TODO: check command line argument, call cleanup() if needed
+    em.setup()
+    em.kick_off()
