@@ -95,29 +95,6 @@ def shutdown():
 
 # --- Private ---
 
-class ElectionBoardState():
-    """
-    A model to encapsulate Election Board (EM) state
-    """
-    def __init__(self):
-        self.voting_in_progress = True
-        self.rsa_private_key = None
-        self.paillier_private_key = None
-        self.paillier_public_key = None
-        self.signed_voters = {}
-
-    def __str__(self):
-        rsa_public_key = None
-        if self.rsa_private_key is not None:
-            rsa_public_key = self.rsa_private_key.publickey()
-        paillier_public_key_n = None
-        if self.paillier_public_key is not None:
-            paillier_public_key_n = self.paillier_public_key.n
-        return "<ElectionBoardState: {}, {}, {}, {}>".format(self.voting_in_progress, rsa_public_key, \
-                                                             paillier_public_key_n, self.signed_voters)
-
-
-
 def _handle_message(msg, conn, state):
     """
     Handles the message as appropriate
@@ -133,7 +110,9 @@ def _handle_message(msg, conn, state):
         _handleReqPublicKeys(msg, conn, state)
     elif isinstance(msg, ReqBlindSign):
         _handleReqBlindSign(msg, conn, state)
-    pass
+    elif isinstance(msg, ReqDisplayResults):
+        _handleReqDisplayResults(msg, conn, state)
+
 
 def _handleReqPublicKeys(msg, conn, state):
     """
@@ -142,12 +121,14 @@ def _handleReqPublicKeys(msg, conn, state):
     resp = RespPublicKeys(state.rsa_private_key.publickey(), state.paillier_public_key)
     common.write_message(conn, resp)
 
+
 def _handleReqBlindSign(msg, conn, state):
     """
     handles request for blind signature
 
     checks that user is a valid voter (exists and pin is correct) and creates blind signature
     """
+    # is voting in progress
     if not state.voting_in_progress:
         common.write_message(conn, common.RespError("Voting is NOT open"))
         return
@@ -171,6 +152,48 @@ def _handleReqBlindSign(msg, conn, state):
     common.write_message(conn, resp)
 
 
+def _handleReqDisplayResults(msg, conn, state):
+    state.voting_in_progress = False
+    decrypted_results = paillier.decrypt(state.paillier_private_key, state.paillier_public_key, msg.encrypted_results)
+    print("Decrypted Results: {} ({:b})".format(decrypted_results, decrypted_results))
+    candidate_votes = [0] * config.NUM_CANDIDATES
+    mask = pow(2, config.NUM_VOTERS.bit_length()) - 1
+    winner_votes_count = -1
+    winner_index = -1
+    for i in range(config.NUM_CANDIDATES):
+        votes_count = (decrypted_results >> (i * config.NUM_VOTERS.bit_length())) & mask
+        print("{}: votes:{} ({:b})".format(i, votes_count, votes_count))
+        candidate_votes[i] = votes_count
+        if votes_count > winner_votes_count:
+            winner_votes_count = votes_count
+            winner_index = i
+
+    print("Candidate Votes: {}".format(candidate_votes))
+    print("Winner is Candidate: {}".format(winner_index))
+
+
+class ElectionBoardState:
+    """
+    A model to encapsulate Election Board (EM) state
+    """
+    def __init__(self):
+        self.voting_in_progress = True
+        self.rsa_private_key = None
+        self.paillier_private_key = None
+        self.paillier_public_key = None
+        self.signed_voters = {}
+
+    def __str__(self):
+        rsa_public_key = None
+        if self.rsa_private_key is not None:
+            rsa_public_key = self.rsa_private_key.publickey()
+        paillier_public_key_n = None
+        if self.paillier_public_key is not None:
+            paillier_public_key_n = self.paillier_public_key.n
+        return "<ElectionBoardState: {}, {}, {}, {}>".format(self.voting_in_progress, rsa_public_key, \
+                                                             paillier_public_key_n, self.signed_voters)
+
+
 def _read_state():
     """
     Reads Election Board (EM) state from disk
@@ -190,3 +213,8 @@ def _write_state(state):
     """
     with open("em.pickle", "wb") as f:
         pickle.dump(state, f)
+
+
+if __name__ == "__main__":
+    setup()
+    kick_off()

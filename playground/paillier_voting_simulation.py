@@ -1,8 +1,6 @@
 from Crypto.Random import random
 from paillier import paillier
 
-import em
-
 
 def do_paillier_voting_simulation(candidates_count, voters_count):
     if not (voters_count > candidates_count):
@@ -55,8 +53,4 @@ def do_paillier_voting_simulation(candidates_count, voters_count):
 
 if __name__ == '__main__':
     # The project requirement was at least 5 candidates.
-    # do_paillier_voting_simulation(10, 100)
-    # print("ALL_VOTERS: {}".format(config.ALL_VOTERS))
-    # TODO: check command line argument, call cleanup() if needed
-    em.setup()
-    em.kick_off()
+    do_paillier_voting_simulation(10, 100)

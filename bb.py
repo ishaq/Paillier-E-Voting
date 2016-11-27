@@ -15,6 +15,7 @@ from paillier import paillier
 import common
 import config
 from bb_interface import *
+import em_interface
 
 def setup():
     """
@@ -93,8 +94,8 @@ def _handle_message(msg, conn, state, pub_keys):
     print("Received Message is: {}".format(msg))
     if isinstance(msg, ReqCastVote):
         _handleReqCastVote(msg, conn, state, pub_keys)
-    elif isinstance(msg, ReqShutdown):
-        _handleReqShutdown(msg, conn, state, pub_keys)
+    elif isinstance(msg, ReqCloseVoting):
+        _handleReqCloseVoting(msg, conn, state, pub_keys)
     pass
 
 def _handleReqCastVote(msg, conn, state, pub_keys):
@@ -125,17 +126,25 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
     state.encrypted_sums = paillier.e_add(pub_keys.paillier_pub_key, state.encrypted_sums, msg.enc_vote)
     state.counted_vote_hashes[vote_hash] = True
 
-    resp = RespCastVoteSuccess()
-    common.write_message(conn, resp)
-
     if len(state.counted_vote_hashes.keys()) == config.NUM_VOTERS:
-        state.voting_in_progress = False
-        # TODO: call stop voting on own socket (in a separate thread)
-        print("TODO: All voters have voted, call stop voting on self")
+        print("All voters have voted.")
+        _handleReqCloseVoting(msg, conn, state)
+
+        resp = RespVotingClosed()
+        common.write_message(conn, resp)
+    else:
+        resp = RespCastVoteSuccess()
+        common.write_message(conn, resp)
 
 
-def _handleReqShutdown(msg, conn, state):
-    pass
+
+def _handleReqCloseVoting(msg, conn, state):
+    state.voting_in_progress = False
+    sock_to_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_to_em.connect(config.EM_ADDR)
+    req = em_interface.ReqDisplayResults(state.encrypted_sums)
+    common.write_message(sock_to_em, req)
+    # the socket will be closed by EM
 
 
 def _handleZKP(msg, conn, state):

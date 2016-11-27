@@ -30,4 +30,12 @@ class RespBlindSign:
     response containing blind signature
     """
     def __init__(self, signed_blinded_encrypted_vote):
-        self.signed_blinded_encrypted_vote  = signed_blinded_encrypted_vote
+        self.signed_blinded_encrypted_vote = signed_blinded_encrypted_vote
+
+
+class ReqDisplayResults:
+    """
+    request to display results (it immediately closes voting and decrypts the results)
+    """
+    def __init__(self, encrypted_results):
+        self.encrypted_results = encrypted_results

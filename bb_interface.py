@@ -35,15 +35,16 @@ class RespCastVoteSuccess:
     pass
 
 
-class ReqShutdown:
+class RespVotingClosed:
     """
-    request to shutdown. This request sends the encrypted results to EM for decryption and shuts BB down
+    response indicating voting session is closed
     """
     pass
 
 
-class RespShutdown:
+class ReqCloseVoting:
     """
-    response for the shutdown request
+    request to closing voting session. It immediately closes voting session (if open) and
+    sends the encrypted results to EM for decryption
     """
     pass

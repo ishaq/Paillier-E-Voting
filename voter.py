@@ -63,12 +63,18 @@ def kick_off():
             print("Error: EM blind signature did NOT verify. Try again.")
             continue
 
-        if _cast_vote_to_bb(enc_vote, unblinded_sign) is None:
-            print("Error: an error occured while casting vote. Try again.")
+        cast_vote_response = _cast_vote_to_bb(enc_vote, unblinded_sign)
+        if cast_vote_response is None:
+            print("Error: an error occurred while casting vote. Try again.")
             continue
 
         print("\n\nSUCCESS.")
-        print("\n\nNext Voter:")
+
+        if isinstance(cast_vote_response, bb_interface.RespVotingClosed):
+            print("\n\nVoting session is now over. Please check Election Board (EM) for results.")
+            break;
+        else:
+            print("\n\nNext Voter:")
 
 
 # --- Private ---
@@ -111,7 +117,7 @@ def _cast_vote_to_bb(enc_vote, signed_enc_vote):
 
     # TODO: ZKP loop
 
-    if isinstance(resp, bb_interface.RespCastVoteSuccess):
+    if isinstance(resp, bb_interface.RespCastVoteSuccess) or isinstance(resp, bb_interface.RespVotingClosed):
         return resp
     return None
 
