@@ -128,7 +128,7 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
     resp = RespCastVoteSuccess()
     common.write_message(conn, resp)
 
-    if state.counted_vote_hashes.keys().count() == config.NUM_VOTERS:
+    if len(state.counted_vote_hashes.keys()) == config.NUM_VOTERS:
         state.voting_in_progress = False
         # TODO: call stop voting on own socket (in a separate thread)
         print("TODO: All voters have voted, call stop voting on self")
