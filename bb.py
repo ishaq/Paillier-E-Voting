@@ -95,7 +95,7 @@ def _handle_message(msg, conn, state, pub_keys):
     if isinstance(msg, ReqCastVote):
         _handleReqCastVote(msg, conn, state, pub_keys)
     elif isinstance(msg, ReqCloseVoting):
-        _handleReqCloseVoting(msg, conn, state, pub_keys)
+        _handleReqCloseVoting(msg, conn, state)
     pass
 
 def _handleReqCastVote(msg, conn, state, pub_keys):
