@@ -46,5 +46,9 @@ Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN i
 * Any vulnerability in Paillier encryption library used by the project is out of scope
 
 ## Authors
-* Muhammad Ishaq (ishaqm@rpi.edu)
+* Muhammad Ishaq (ishaq@ishaq.pk)
 * Daniel Park (parkd5@rpi.edu)
+
+## Credits
+* [PyCrypto](https://pypi.python.org/pypi/pycrypto) is used for RSA encryption and SHA-256 hashes
+* [Paillier](https://github.com/mikeivanov/paillier) is used for Paillier homomorphic encryption. (We modified it a little bit to to support Python 3)
