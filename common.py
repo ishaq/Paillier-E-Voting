@@ -4,6 +4,10 @@ Common models and utility functions
 
 import struct
 import pickle
+import socket
+
+import config
+import em_interface
 
 class RespError:
     """
@@ -53,6 +57,20 @@ def write_message(conn, obj):
     buf_to_write = struct.pack("!i", msg_size) + msg
     conn.sendall(buf_to_write)
 
+
+def get_public_key_from_em():
+    """
+    Gets public keys from the EM
+
+    :return: public keys
+    """
+    sock_to_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_to_em.connect(config.EM_ADDR)
+    write_message(sock_to_em, em_interface.ReqPublicKeys())
+    pub_keys = read_message(sock_to_em)
+    print("RSA: {}, Paillier: {}".format(pub_keys.rsa_pub_key, pub_keys.paillier_pub_key))
+    # socket will be closed by the EM server
+    return pub_keys
 
 # --- Private ---
 

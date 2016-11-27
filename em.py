@@ -28,26 +28,31 @@ def setup():
 
     Generates Paillier and RSA keys and persists them to disk
     """
-    # Generate Key (RSA)
-    print("Generating RSA Key with size: {}".format(config.RSA_KEY_SIZE))
-    rsa_private_key = RSA.generate(config.RSA_KEY_SIZE)
+    try:
+        state = _read_state()
+        print("Existing state found, loading it: {}".format(state))
+    except FileNotFoundError:
+        print("No previous state found, creating new state")
+        state = ElectionBoardState()
 
-    # Generate Key (Paillier)
-    bits_per_candidate = config.NUM_VOTERS.bit_length()
-    key_size = config.NUM_CANDIDATES * bits_per_candidate
-    if key_size < 16:
-        key_size = 16
-    if key_size % 2 == 1:
-        key_size += 1
-    print("Generating Paillier Key with size: {}".format(key_size))
-    paillier_private_key, paillier_public_key = paillier.generate_keypair(key_size)
+        # Generate Key (RSA)
+        print("Generating RSA Key with size: {}".format(config.RSA_KEY_SIZE))
+        state.rsa_private_key = RSA.generate(config.RSA_KEY_SIZE)
 
-    print("Saving Keys (and other state)")
-    state = ElectionBoardState()
-    state.rsa_private_key = rsa_private_key
-    state.paillier_private_key = paillier_private_key
-    state.paillier_public_key = paillier_public_key
-    _write_state(state)
+        # Generate Key (Paillier)
+        bits_per_candidate = config.NUM_VOTERS.bit_length()
+        key_size = config.NUM_CANDIDATES * bits_per_candidate
+        if key_size < 16:
+            key_size = 16
+        if key_size % 2 == 1:
+            key_size += 1
+        print("Generating Paillier Key with size: {}".format(key_size))
+        paillier_private_key, paillier_public_key = paillier.generate_keypair(key_size)
+        state.paillier_private_key = paillier_private_key
+        state.paillier_public_key = paillier_public_key
+
+        print("Saving Keys (and other state)")
+        _write_state(state)
 
     print("Election Board (EM) setup complete...")
 

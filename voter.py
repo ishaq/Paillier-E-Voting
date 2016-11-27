@@ -7,13 +7,13 @@ the vote and gets it blind-signed from Election Board (EM). The vote is then cas
 
 import socket
 
-from Crypto.PublicKey import RSA
 from Crypto.Random import random
 from paillier import paillier
 
 import config
 import common
 import em_interface
+import bb_interface
 
 
 def setup():
@@ -31,7 +31,7 @@ def kick_off():
     Prepares itself for voters
     """
 
-    pub_keys = _get_public_key_from_em()
+    pub_keys = common.get_public_key_from_em()
 
     # Voting Loop
     while True:
@@ -60,10 +60,12 @@ def kick_off():
             continue
         unblinded_sign = pub_keys.rsa_pub_key.unblind(resp.signed_blinded_encrypted_vote, r)
         if not pub_keys.rsa_pub_key.verify(enc_vote, (unblinded_sign,)):
-            print("Error: EM blind signature did NOT verify. Try again")
+            print("Error: EM blind signature did NOT verify. Try again.")
             continue
 
-        print("TODO: Signature verifies, now cast vote to the bulletin board")
+        if _cast_vote_to_bb(enc_vote, unblinded_sign) is None:
+            print("Error: an error occured while casting vote. Try again.")
+            continue
 
         print("\n\nSUCCESS.")
         print("\n\nNext Voter:")
@@ -77,21 +79,6 @@ class VoterState:
     """
     def __init__(self):
         pass
-
-
-def _get_public_key_from_em():
-    """
-    Gets public keys from the EM
-
-    :return: public keys
-    """
-    sock_to_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock_to_em.connect(config.EM_ADDR)
-    common.write_message(sock_to_em, em_interface.ReqPublicKeys())
-    pub_keys = common.read_message(sock_to_em)
-    print("RSA: {}, Paillier: {}".format(pub_keys.rsa_pub_key, pub_keys.paillier_pub_key))
-    # socket will be closed by the server
-    return pub_keys
 
 
 def _get_blind_sign_from_em(voter_id, voter_pin, blinded_encrypted_vote):
@@ -110,6 +97,21 @@ def _get_blind_sign_from_em(voter_id, voter_pin, blinded_encrypted_vote):
     resp = common.read_message(sock_to_em)
     print("Response for Blind Sign: {}".format(resp))
     if isinstance(resp, em_interface.RespBlindSign):
+        return resp
+    return None
+
+
+def _cast_vote_to_bb(enc_vote, signed_enc_vote):
+    sock_to_bb = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_to_bb.connect(config.BB_ADDR)
+    req = bb_interface.ReqCastVote(enc_vote, signed_enc_vote)
+    common.write_message(sock_to_bb, req)
+    resp = common.read_message(sock_to_bb)
+    print("Response for Cast Vote: {}".format(resp))
+
+    # TODO: ZKP loop
+
+    if isinstance(resp, bb_interface.RespCastVoteSuccess):
         return resp
     return None
 
