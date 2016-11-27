@@ -40,7 +40,7 @@ pip install -r requirements.txt
 Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN is the same as his ID i.e. PIN for `Voter00` is `Voter00` and so on... 
 
 ## Assumptions
-* Voter, Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot access them and/or obtain keys)
+* Voter, Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot control them and/or obtain keys). This assumption will be violated, for exampple, if the adversary takes control of the Voter system and starts feeding invalid votes (for nonexistent candidates, etc). 
 * Connection between Voter, Bulletin Board (BB) and Election Board (EM) is secure and trusted. (i.e. no MITM attack)
 * Any vulnerability in PyCrypto is out of scope
 * Any vulnerability in Paillier encryption library used by the project is out of scope
