@@ -3,8 +3,7 @@
 # https://github.com/mikeivanov/paillier/
 
 import math
-import fractions
-import primes
+from . import primes
 
 def invmod(a, p, maxiter=1000000):
     """The multiplicitive inverse of a in the integers modulo p:
@@ -15,7 +14,7 @@ def invmod(a, p, maxiter=1000000):
         raise ValueError('0 has no inverse mod %d' % p)
     r = a
     d = 1
-    for i in xrange(min(p, maxiter)):
+    for i in range(min(p, maxiter)):
         d = ((p // r + 1) * d) % p
         r = (d * a) % p
         if r == 1:
@@ -55,7 +54,7 @@ class PublicKey(object):
     def __init__(self, n):
         self.n = n
         self.n_sq = n * n
-        self.g = self.n + 1
+        self.g = n + 1
 
     def __repr__(self):
         return '<PublicKey: %s>' % self.n
@@ -66,21 +65,14 @@ def generate_keypair(bits):
     n = p * q
     return PrivateKey(p, q, n), PublicKey(n)
 
-def get_x(pub):
+def encrypt(pub, plain):
     while True:
-        r = primes.generate_prime(long(round(math.log(pub.n, 2))))
-        if r > 0 and r < pub.n and (fractions.gcd(r, pub.n) == 1):
+        r = primes.generate_prime(int(round(math.log(pub.n, 2))))
+        if r > 0 and r < pub.n:
             break
-    x = r
-    return x
-
-def encrypt(pub, x, plain):
-    cipher = (pow(pub.g, plain, pub.n_sq) * pow(x, pub.n, pub.n_sq)) % pub.n_sq
+    x = pow(r, pub.n, pub.n_sq)
+    cipher = (pow(pub.g, plain, pub.n_sq) * x) % pub.n_sq
     return cipher
-
-def encrypt_original(pub, plain):
-    x = get_x(pub)
-    return encrypt(pub, x, plain)
 
 def e_add(pub, a, b):
     """Add one encrypted integer to another"""
@@ -91,7 +83,7 @@ def e_add_const(pub, a, n):
     return a * modpow(pub.g, n, pub.n_sq) % pub.n_sq
 
 def e_mul_const(pub, a, n):
-    """Multiplies an encrypted integer by a constant"""
+    """Multiplies an ancrypted integer by a constant"""
     return modpow(a, n, pub.n_sq)
 
 def decrypt(priv, pub, cipher):

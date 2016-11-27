@@ -1,5 +1,5 @@
 from Crypto.Random import random
-import paillier
+from paillier import paillier
 
 def do_paillier_voting_simulation(candidates_count, voters_count):
     if not (voters_count > candidates_count):
@@ -17,18 +17,18 @@ def do_paillier_voting_simulation(candidates_count, voters_count):
 
     # 2. Generate Initial Sum (this is done at BB, it has the pk of EM)
     initial_count = 0
-    c = paillier.encrypt_original(pk, initial_count)
+    c = paillier.encrypt(pk, initial_count)
     d = paillier.decrypt(sk, pk, c)
     print("c: {}, d: {}".format(c, d))
 
     # 3. Voting is done
-    for i in xrange(voters_count):
+    for i in range(voters_count):
         r = random.randint(0, candidates_count-1)
         print("{}: Voting for candidate: {}".format(i, r))
         plain_candidates_votes[r] += 1
         # Generate encryption of the vote
         vote = 1 << (r * bits_per_candidate)
-        encrypted_vote = paillier.encrypt_original(pk, vote)
+        encrypted_vote = paillier.encrypt(pk, vote)
         c = paillier.e_add(pk, c, encrypted_vote)
         # print("vote: {:b}, encrypted_vote: {}, c: {}".format(vote, encrypted_vote, c))
         # (then try generating an encryption with a different key)
@@ -39,7 +39,7 @@ def do_paillier_voting_simulation(candidates_count, voters_count):
     print("c: {}, d:{} ({:b})".format(c, d, d))
     candidates_votes = [0] * candidates_count
     mask = pow(2, bits_per_candidate) - 1
-    for i in xrange(candidates_count):
+    for i in range(candidates_count):
         votes_count = (d >> (i * bits_per_candidate)) & mask
         print("{}, mask: {:b}, d: {:b}, votes: {}".format(i, mask, d, votes_count))
         candidates_votes[i] = votes_count
