@@ -12,7 +12,7 @@ pip install -r requirements.txt
 * Voter, Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot access them and/or obtain keys)
 * Connection between Voter, Bulletin Board (BB) and Election Board (EM) is secure and trusted. (i.e. no MITM attack)
 * Any vulnerability in PyCrypto is out of scope
-* Any vulnerability in Paillier homom (Paillier encryption library used by the project) is out of scope
+* Any vulnerability in Paillier encryption library used by the project is out of scope
 
 ## Authors
 * Muhammad Ishaq (ishaqm@rpi.edu)
