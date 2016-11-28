@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Generated files
+*.pickle
+
 # C extensions
 *.so
 
@@ -87,3 +90,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# PyCharm
+.idea/
