@@ -6,7 +6,23 @@ import math
 import primes
 import fractions
 
-def invmod(a, p, maxiter=1000000):
+def extended_gcd(aa, bb):
+    lastremainder, remainder = abs(aa), abs(bb)
+    x, lastx, y, lasty = 0, 1, 1, 0
+    while remainder:
+        lastremainder, (quotient, remainder) = remainder, divmod(lastremainder, remainder)
+        x, lastx = lastx - quotient*x, x
+        y, lasty = lasty - quotient*y, y
+    return lastremainder, lastx * (-1 if aa < 0 else 1), lasty * (-1 if bb < 0 else 1)
+    
+def invmod(a, m):
+	g, x, y = extended_gcd(a, m)
+	if g != 1:
+		raise ValueError('%d has no inverse mod %d' % (a, p))
+	return x % m
+	    
+# old invmod
+def invmod2(a, p, maxiter=10000000):
     """The multiplicitive inverse of a in the integers modulo p:
          a * b == 1 mod p
        Returns b.
@@ -23,6 +39,8 @@ def invmod(a, p, maxiter=1000000):
     else:
         raise ValueError('%d has no inverse mod %d' % (a, p))
     return d
+# Above code not really used. can delete
+
 
 def modpow(base, exponent, modulus):
     """Modular exponent:
@@ -68,7 +86,7 @@ def generate_keypair(bits):
 
 def get_x(pub):
     x = primes.generate_prime(int(round(math.log(pub.n, 2))))
-    while (fractions.gcd(x, pub.n) != 1):
+    while (fractions.gcd(x, pub.n_sq) != 1):
         x = primes.generate_prime(int(round(math.log(pub.n, 2))))
     return x
     
