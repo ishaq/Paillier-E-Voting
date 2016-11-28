@@ -9,6 +9,9 @@ pip install -r requirements.txt
 ```
 
 ### How to Run
+
+**Note:** You can modify the number of candidates and number of voters in `config.py` 
+
 1. Run cleanup script (to clean stale state files)
 
     ```bash
@@ -37,7 +40,7 @@ pip install -r requirements.txt
     python close_voting.py
     ```
     
-Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN is the same as his ID i.e. PIN for `Voter00` is `Voter00` and so on... 
+Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN is the same as his ID i.e. PIN for `Voter00` is `Voter00` and so on.
 
 ## Assumptions
 1. Voter, Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot control them and/or obtain keys). This assumption will be violated, for exampple, if the adversary takes control of the Voter system and starts feeding invalid votes (for nonexistent candidates, etc). 
