@@ -42,8 +42,8 @@ def setup():
         # Generate Key (Paillier)
         bits_per_candidate = config.NUM_VOTERS.bit_length()
         key_size = config.NUM_CANDIDATES * bits_per_candidate
-        if key_size < 16:
-            key_size = 16
+        if key_size < config.MIN_PAILLIER_KEY_SIZE:
+            key_size = config.MIN_PAILLIER_KEY_SIZE
         if key_size % 2 == 1:
             key_size += 1
         print("Generating Paillier Key with size: {}".format(key_size))
@@ -142,7 +142,7 @@ def _handleReqBlindSign(msg, conn, state):
         return
     # already got a signed vote
     elif msg.voter_id in state.signed_voters.keys():
-        common.write_message(conn, common.RespError("Voter has already voted"))
+        common.write_message(conn, common.RespError("Voter already got a signed vote, will not sign another one"))
         return
 
     # Sign the vote

@@ -2,7 +2,7 @@
 Bulletin Board (BB)
 
 This module uses paillier's homomorphic properties to keep track of vote sums. It also performs ZKP to make sure user
-knows his vote.
+knows his vote and that the vote is valid.
 """
 
 
@@ -16,6 +16,7 @@ import common
 import config
 from bb_interface import *
 import em_interface
+import zkp
 
 def setup():
     """
@@ -81,6 +82,7 @@ def shutdown():
 
 # --- Private ---
 
+
 def _handle_message(msg, conn, state, pub_keys):
     """
     Handles the message as appropriate
@@ -98,6 +100,7 @@ def _handle_message(msg, conn, state, pub_keys):
         _handleReqCloseVoting(msg, conn, state)
     pass
 
+
 def _handleReqCastVote(msg, conn, state, pub_keys):
     # is voting open?
     if not state.voting_in_progress:
@@ -105,7 +108,7 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
         return
 
     # check ZKP
-    if not _handleZKP(msg, conn, state):
+    if not _handleZKP(msg, conn, state, pub_keys.paillier_pub_key):
         common.write_message(conn, common.RespError("Zero Knowledge Proof failed, cannot cast vote"))
         return
 
@@ -137,7 +140,6 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
         common.write_message(conn, resp)
 
 
-
 def _handleReqCloseVoting(msg, conn, state):
     state.voting_in_progress = False
     sock_to_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -147,10 +149,44 @@ def _handleReqCloseVoting(msg, conn, state):
     # the socket will be closed by EM
 
 
-def _handleZKP(msg, conn, state):
-    # TODO: ZKP loop to make sure user knows his vote
+def _handleZKP(msg, conn, state, pk):
+    valid_messages = zkp.compute_valid_messages(config.NUM_CANDIDATES, config.NUM_VOTERS)
+    inv_gmk_params = zkp.compute_inv_gmk(pk.g, pk.n, valid_messages)
+    e_max = zkp.compute_e_max(pk.n)
+    u_params = zkp.compute_u_params(msg.enc_vote, inv_gmk_params, pk.n_sq)
+
+    # for i to 50
+    # TODO: actually loop
+    # ask for commitment
+    print("BB: requesting ZKP commitment")
+    common.write_message(conn, RespZKPProvideCommitment())
+    req_challenge = common.read_message(conn)
+    if not isinstance(req_challenge, ReqZKPChallenge):
+        return False
+    # read commitment
+    a_params = req_challenge.a_params
+    e_s = zkp.select_e_s(e_max)
+    print("BB: sending ZKP challenge")
+    # send challenge
+    resp_challenge = RespZKPChallenge(e_s)
+    common.write_message(conn, resp_challenge)
+    # read response
+    print("BB: verifying ZKP")
+    req_verification = common.read_message(conn)
+    if not isinstance(req_verification, ReqZKPVerify):
+        return False
+    e_params = req_verification.e_params
+    z_params = req_verification.z_params
+    # verify
+    if not zkp.verify(e_max, e_s, a_params, e_params, z_params, u_params, pk):
+        print("ZKP Verification failed")
+        return False
+    # continue if passed
+
     return True
 
+
+# -- Bulletin Board State
 
 class BulletinBoardState():
     """

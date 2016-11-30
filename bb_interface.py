@@ -12,20 +12,38 @@ class ReqCastVote:
         self.signed_enc_vote = signed_enc_vote
 
 
-class RespProvideZKP:
+class RespZKPProvideCommitment:
     """
-    response, requesting voter to provide ZKP
+    response, requesting voter to provide ZKP commitment
     """
-    # TODO: fill it in
     pass
 
 
-class ReqVerifyZKP:
+class ReqZKPChallenge:
+    """
+    request, requesting BB to provide ZKP challenge.
+
+    this request contains the ZKP commitment
+    """
+    def __init__(self, a_params):
+        self.a_params = a_params
+
+
+class RespZKPChallenge:
+    """
+    response, contains ZKP challenge
+    """
+    def __init__(self, e_s):
+        self.e_s = e_s
+
+
+class ReqZKPVerify:
     """
     request containing ZKP that BB can verify
     """
-    # TODO: fill it in
-    pass
+    def __init__(self, e_params, z_params):
+        self.e_params = e_params
+        self.z_params = z_params
 
 
 class RespCastVoteSuccess:

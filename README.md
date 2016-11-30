@@ -43,11 +43,10 @@ pip install -r requirements.txt
 Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN is the same as his ID i.e. PIN for `Voter00` is `Voter00` and so on.
 
 ## Assumptions
-1. Voter, Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot control them and/or obtain keys). This assumption will be violated, for exampple, if the adversary takes control of the Voter system and starts feeding invalid votes (for nonexistent candidates, etc). 
-1. Connection between Voter, Bulletin Board (BB) and Election Board (EM) is secure and trusted. (i.e. no MITM attack)
-1. Election Board (EM) is actually a group of individuals who possess secret key in t-n threshold sharing fashion. They decrypt their share of the final encrypted tally (they never physically come together) .
+1. Keys are shared between Election Board (EM) and Bulletin Board (BB) in advance. Key sharing is secure and trusted.
+1. Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot control them and/or obtain keys).
+1. Election Board (EM) is, in reality, a group of individuals/institutions who possess secret key in t-n threshold sharing fashion. They decrypt their share of the final encrypted tally (they never physically come together) .
 1. Any vulnerability in PyCrypto is out of scope
-1. Any vulnerability in Paillier encryption library used by the project is out of scope
 
 ## Authors
 * Muhammad Ishaq (ishaq@ishaq.pk)
@@ -55,4 +54,4 @@ Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN i
 
 ## Credits
 * [PyCrypto](https://pypi.python.org/pypi/pycrypto) is used for RSA encryption and SHA-256 hashes
-* [Paillier](https://github.com/mikeivanov/paillier) is used for Paillier homomorphic encryption. We modified it a considerably to fix bugs and make it work with Python 3. In fact, at this point we are not sure why we even bothered with this library in the first place.
+* [Paillier](https://github.com/mikeivanov/paillier) is used for Paillier homomorphic encryption. We modified it a considerably to fix bugs and make it work with Python 3.
