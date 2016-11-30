@@ -63,7 +63,7 @@ print("bits_per_candidate: {}, key_size: {}, {}, {}".format(bits_per_candidate, 
 valid_messages = [1 << (x*bits_per_candidate) for x in range(NUM_CANDIDATES)]
 print(" valid_messages: {}".format(valid_messages))
 
-msg = valid_messages[0]
+msg = valid_messages[0] # MODIFY THIS TO ANOTHER VALUE OR AN INVALID VALUE TO SEE THAT ZKP FAILS ON INVALID VALUES
 rand = paillier.get_r_in_z_n_star(pk)
 cipher = paillier.encrypt_with_r(pk, rand, msg)
 print("msg: {}, rand: {}, cipher: {}".format(msg, rand, cipher))
