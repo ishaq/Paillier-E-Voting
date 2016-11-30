@@ -65,7 +65,12 @@ def kick_off():
             continue
 
         cast_vote_response = _cast_vote_to_bb(vote, rand, enc_vote, unblinded_sign, pub_keys.paillier_pub_key)
-        if cast_vote_response is not None:
+        if isinstance(cast_vote_response, bb_interface.RespVotingClosed):
+            print("\n\nSUCCESS.")
+            print("\nVoting process is now complete. Please switch to EM to see election results")
+            break
+            # for any other non-null response, we consider it an error
+        elif cast_vote_response is not None:
             print("VOTER: ERROR: {}.".format(cast_vote_response))
             continue
 

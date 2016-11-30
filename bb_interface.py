@@ -11,12 +11,16 @@ class ReqCastVote:
         self.enc_vote = enc_vote
         self.signed_enc_vote = signed_enc_vote
 
+    def __repr__(self):
+        return "<ReqCastVote: enc_vote: {}, signed_enc_vote: {}>".format(self.enc_vote, self.signed_enc_vote)
+
 
 class RespZKPProvideCommitment:
     """
     response, requesting voter to provide ZKP commitment
     """
-    pass
+    def __repr__(self):
+        return "<RespZKPProvideCommitment: Verifier requests the Prover to provide ZKP commitment.>"
 
 
 class ReqZKPChallenge:
@@ -59,14 +63,16 @@ class RespCastVoteSuccess:
     """
     response indicating vote has been cast
     """
-    pass
+    def __repr__(self):
+        return "<RespCastVoteSuccess: Vote has been casted successfully>"
 
 
 class RespVotingClosed:
     """
     response indicating voting session is closed
     """
-    pass
+    def __repr__(self):
+        return "<RespVotingClosed: Voting process is now complete.>"
 
 
 class ReqCloseVoting:
@@ -74,4 +80,5 @@ class ReqCloseVoting:
     request to closing voting session. It immediately closes voting session (if open) and
     sends the encrypted results to EM for decryption
     """
-    pass
+    def __repr__(self):
+        return "<ReqCloseVoting: Request to close the voting process.>"
