@@ -5,45 +5,39 @@
 import math
 from . import primes
 
-def invmod(a, p, maxiter=1000000):
-    """The multiplicitive inverse of a in the integers modulo p:
-         a * b == 1 mod p
-       Returns b.
-       (http://code.activestate.com/recipes/576737-inverse-modulo-p/)"""
-    if a == 0:
-        raise ValueError('0 has no inverse mod %d' % p)
-    r = a
-    d = 1
-    for i in range(min(p, maxiter)):
-        d = ((p // r + 1) * d) % p
-        r = (d * a) % p
-        if r == 1:
-            break
-    else:
-        raise ValueError('%d has no inverse mod %d' % (a, p))
-    return d
+def egcd(a, b):
+    """
+    Euclidean Extendted Algorithm for GCD
 
-def modpow(base, exponent, modulus):
-    """Modular exponent:
-         c = b ^ e mod m
-       Returns c.
-       (http://www.programmish.com/?p=34)"""
-    result = 1
-    while exponent > 0:
-        if exponent & 1 == 1:
-            result = (result * base) % modulus
-        exponent = exponent >> 1
-        base = (base * base) % modulus
-    return result
+    Code based on: https://en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm
+    """
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = egcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+def modinv(a, m):
+    """The multiplicitive inverse of a in the integers modulo p:
+             a * b == 1 mod p
+           Returns b.
+    """
+    g, x, y = egcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    else:
+        return x % m
 
 class PrivateKey(object):
 
     def __init__(self, p, q, n):
         self.l = (p-1) * (q-1)
-        self.m = invmod(self.l, n)
+        self.m = modinv(self.l, n)
+        self.p = p
+        self.q = q
 
     def __repr__(self):
-        return '<PrivateKey: %s %s>' % (self.l, self.m)
+        return '<PrivateKey: %s %s %s %s>' % (self.p, self.q, self.l, self.m)
 
 class PublicKey(object):
 
@@ -57,7 +51,7 @@ class PublicKey(object):
         self.g = n + 1
 
     def __repr__(self):
-        return '<PublicKey: %s>' % self.n
+        return '<PublicKey: %s %s %s>' % (self.n, self.g, self.n_sq)
 
 def generate_keypair(bits):
     p = primes.generate_prime(bits / 2)
@@ -66,10 +60,18 @@ def generate_keypair(bits):
     return PrivateKey(p, q, n), PublicKey(n)
 
 def encrypt(pub, plain):
+    r = get_r_in_z_n_star(pub)
+    return encrypt_with_r(pub, r, plain)
+
+def get_r_in_z_n_star(pub):
     while True:
         r = primes.generate_prime(int(round(math.log(pub.n, 2))))
-        if r > 0 and r < pub.n:
+        # r is in $$Z_{n}^{*}$$ i.e. Z-n-star (it has to be have a multiplicative inverse in Zn)
+        if r > 0 and r < pub.n and math.gcd(pub.n, r) == 1:
             break
+    return r
+
+def encrypt_with_r(pub, r, plain):
     x = pow(r, pub.n, pub.n_sq)
     cipher = (pow(pub.g, plain, pub.n_sq) * x) % pub.n_sq
     return cipher
@@ -80,11 +82,11 @@ def e_add(pub, a, b):
 
 def e_add_const(pub, a, n):
     """Add constant n to an encrypted integer"""
-    return a * modpow(pub.g, n, pub.n_sq) % pub.n_sq
+    return a * pow(pub.g, n, pub.n_sq) % pub.n_sq
 
 def e_mul_const(pub, a, n):
     """Multiplies an ancrypted integer by a constant"""
-    return modpow(a, n, pub.n_sq)
+    return pow(a, n, pub.n_sq)
 
 def decrypt(priv, pub, cipher):
     x = pow(cipher, priv.l, pub.n_sq) - 1
