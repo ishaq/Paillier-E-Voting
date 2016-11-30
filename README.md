@@ -45,6 +45,7 @@ Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN i
 ## Assumptions
 1. Keys are shared between Election Board (EM) and Bulletin Board (BB) in advance. Key sharing is secure and trusted.
 1. Bulletin Board (BB) and Election Board (EM) systems are secure (i.e. adversary cannot control them and/or obtain keys).
+1. Connection between Bulletin Board (BB) and Election Board (EM) is secure and trusted (e.g. communication happens over TLS/SSL and both servers know each others identity).
 1. Election Board (EM) is, in reality, a group of individuals/institutions who possess secret key in t-n threshold sharing fashion. They decrypt their share of the final encrypted tally (they never physically come together) .
 1. Any vulnerability in PyCrypto is out of scope
 
