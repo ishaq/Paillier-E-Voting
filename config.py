@@ -23,3 +23,6 @@ RSA_KEY_SIZE = 3072
 """Number of Times ZKP should be verified"""
 ZKP_ITERATIONS = 5
 
+"""Name of the file containing election results"""
+ELECTION_RESULTS_FILENAME = "election_results.txt"
+

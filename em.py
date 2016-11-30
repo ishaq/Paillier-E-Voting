@@ -170,6 +170,25 @@ def _handleReqDisplayResults(msg, conn, state):
     else:
         print("Winner is candidate: {}".format(winner_indices[0]))
 
+    print("\nElection results are available in: '{}'".format(config.ELECTION_RESULTS_FILENAME))
+    _write_results(msg.encrypted_results, candidate_votes, winner_indices)
+
+
+def _write_results(encrypted_tally, candidate_votes, winner_indices):
+    with open(config.ELECTION_RESULTS_FILENAME, mode='w', encoding='utf-8') as f:
+        f.write('ELECTION RESULTS\n\n')
+        f.write('{:<20} {}\n'.format("Encrypted Tally:", encrypted_tally))
+        f.write("\n")
+        f.write("{:<20}\t{}\n".format("CANDIDATE", "# OF VOTES"))
+        for i in range(len(candidate_votes)):
+            f.write("{:<20}\t{:>10}\n".format(i, candidate_votes[i]))
+
+        f.write("\n\n\nRESULT:\n")
+        if len(winner_indices) > 1:
+            f.write('We have a tie between: {}\n'.format(winner_indices))
+        else:
+            f.write('Candidate {} won with {} votes\n'.format(winner_indices[0], candidate_votes[winner_indices[0]]))
+
 
 class ElectionBoardState:
     """
