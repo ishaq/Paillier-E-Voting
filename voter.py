@@ -7,6 +7,7 @@ the vote and gets it blind-signed from Election Board (EM). The vote is then cas
 
 import socket
 
+from Crypto.Hash import SHA256
 from Crypto.Random import random
 from paillier import paillier
 
@@ -34,6 +35,7 @@ def kick_off():
 
     pub_keys = common.get_public_key_from_em()
 
+    print("\n\n\nREADY!\n")
     # Voting Loop
     while True:
         voter_id = input("Enter your Voter Id: ")
@@ -59,6 +61,7 @@ def kick_off():
 
         if resp is None:
             continue
+
         unblinded_sign = pub_keys.rsa_pub_key.unblind(resp.signed_blinded_encrypted_vote, r)
         if not pub_keys.rsa_pub_key.verify(enc_vote, (unblinded_sign,)):
             print("Error: EM blind signature did NOT verify. Try again.")
@@ -66,8 +69,16 @@ def kick_off():
 
         cast_vote_response = _cast_vote_to_bb(vote, rand, enc_vote, unblinded_sign, pub_keys.paillier_pub_key)
         if isinstance(cast_vote_response, bb_interface.RespCastVoteSuccess):
-            # TODO: Print vote and it's SHA
-            print("\n\nSUCCESS.")
+            sha256 = SHA256.new()
+            sha256.update(str(enc_vote).encode("utf-8"))
+            vote_hash = sha256.hexdigest()
+            print("\n\nSUCCESS! Your vote has been cast.")
+            print("\nPlease take a note of your encrypted vote or its hash, you can use one of these to verify" +
+                  " that your vote was included in election by:" +
+                  "\n\t1. looking for it in the bulletin board and " +
+                  "\n\t2. verifying the encrypted tally.")
+            print("Hash: \t\t{}".format(vote_hash))
+            print("Encrypted Vote: {}\n".format(enc_vote))
             if cast_vote_response.is_voting_complete:
                 print("\nVoting process is now complete. Please switch to EM to see election results")
                 break
@@ -75,13 +86,11 @@ def kick_off():
             print("VOTER: ERROR: {}.".format(cast_vote_response))
             continue
 
-        print("\n\nSUCCESS.")
-
         if isinstance(cast_vote_response, bb_interface.RespVotingClosed):
             print("\n\nVoting session is now over. Please check Election Board (EM) for results.")
             break;
         else:
-            print("\n\nNext Voter:")
+            print("\n\n\nNext Voter:")
 
 
 # --- Private ---
@@ -111,6 +120,8 @@ def _get_blind_sign_from_em(voter_id, voter_pin, blinded_encrypted_vote):
     print("Response for Blind Sign: {}".format(resp))
     if isinstance(resp, em_interface.RespBlindSign):
         return resp
+    if isinstance(resp, common.RespError):
+        print("\n\nFAILED! Your vote was not cast, Reason: {}\n".format(resp.msg))
     return None
 
 

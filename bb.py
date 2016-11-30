@@ -110,7 +110,7 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
 
     # check that user hasn't already voted
     sha256 = SHA256.new()
-    sha256.update(str(msg.signed_enc_vote).encode("utf-8"))
+    sha256.update(str(msg.enc_vote).encode("utf-8"))
     vote_hash = sha256.hexdigest()
     if vote_hash in state.counted_votes.keys():
         common.write_message(conn, common.RespError("Already counted this vote"))
