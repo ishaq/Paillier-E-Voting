@@ -65,12 +65,13 @@ def kick_off():
             continue
 
         cast_vote_response = _cast_vote_to_bb(vote, rand, enc_vote, unblinded_sign, pub_keys.paillier_pub_key)
-        if isinstance(cast_vote_response, bb_interface.RespVotingClosed):
+        if isinstance(cast_vote_response, bb_interface.RespCastVoteSuccess):
+            # TODO: Print vote and it's SHA
             print("\n\nSUCCESS.")
-            print("\nVoting process is now complete. Please switch to EM to see election results")
-            break
-            # for any other non-null response, we consider it an error
-        elif cast_vote_response is not None:
+            if cast_vote_response.is_voting_complete:
+                print("\nVoting process is now complete. Please switch to EM to see election results")
+                break
+        else:
             print("VOTER: ERROR: {}.".format(cast_vote_response))
             continue
 
@@ -121,10 +122,7 @@ def _cast_vote_to_bb(plain_vote, rand, enc_vote, signed_enc_vote, pk):
     # handle the zkp
     resp = _handle_zkp(sock_to_bb, plain_vote, enc_vote, rand, pk)
 
-    if not isinstance(resp, bb_interface.RespCastVoteSuccess):
-        return resp
-    print("Casting vote succeeded")
-    return None
+    return resp
 
 
 def _handle_zkp(conn, vote, enc_vote, rand, pk):

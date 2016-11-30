@@ -63,6 +63,9 @@ class RespCastVoteSuccess:
     """
     response indicating vote has been cast
     """
+    def __init__(self, is_voting_complete = False):
+        self.is_voting_complete = is_voting_complete
+
     def __repr__(self):
         return "<RespCastVoteSuccess: Vote has been casted successfully>"
 

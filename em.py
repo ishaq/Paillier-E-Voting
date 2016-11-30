@@ -85,15 +85,8 @@ def kick_off():
         conn.close()
         _write_state(state)
 
-
-def shutdown():
-    """
-    Shuts down the server
-
-    stops listening and shuts down sockets
-    """
-
 # --- Private ---
+
 
 def _handle_message(msg, conn, state):
     """

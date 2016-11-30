@@ -72,14 +72,6 @@ def kick_off():
         conn.close()
         _write_state(state)
 
-
-def shutdown():
-    """
-    Shuts down the server
-
-    stops listening and shuts down sockets
-    """
-
 # --- Private ---
 
 
@@ -98,7 +90,6 @@ def _handle_message(msg, conn, state, pub_keys):
         _handleReqCastVote(msg, conn, state, pub_keys)
     elif isinstance(msg, ReqCloseVoting):
         _handleReqCloseVoting(msg, conn, state)
-    pass
 
 
 def _handleReqCastVote(msg, conn, state, pub_keys):
@@ -128,16 +119,14 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
     # all checks passed, cast the vote
     state.encrypted_sums = paillier.e_add(pub_keys.paillier_pub_key, state.encrypted_sums, msg.enc_vote)
     state.counted_vote_hashes[vote_hash] = True
+    resp = RespCastVoteSuccess()
 
     if len(state.counted_vote_hashes.keys()) == config.NUM_VOTERS:
         print("All voters have voted.")
         _handleReqCloseVoting(msg, conn, state)
+        resp.is_voting_complete = True
 
-        resp = RespVotingClosed()
-        common.write_message(conn, resp)
-    else:
-        resp = RespCastVoteSuccess()
-        common.write_message(conn, resp)
+    common.write_message(conn, resp)
 
 
 def _handleReqCloseVoting(msg, conn, state):
