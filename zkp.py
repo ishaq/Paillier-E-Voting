@@ -145,6 +145,10 @@ def compute_challenge_response_params(msg_index, e_max, e_s, e_params, z_params,
     :param pk: public key of Paillier
     :return: a tuple (e_params, z_params)
     """
+
+    e_params[msg_index] = 0
+    z_params[msg_index] = 0
+
     e_sum = 0
     for e in e_params:
         e_sum = (e_sum + e) % e_max

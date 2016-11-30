@@ -20,3 +20,6 @@ MIN_PAILLIER_KEY_SIZE = 128
 '''Size of RSA Key'''
 RSA_KEY_SIZE = 3072
 
+"""Number of Times ZKP should be verified"""
+ZKP_ITERATIONS = 5
+

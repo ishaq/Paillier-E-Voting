@@ -28,6 +28,9 @@ class ReqZKPChallenge:
     def __init__(self, a_params):
         self.a_params = a_params
 
+    def __repr__(self):
+        return "<ReqZKPChallenge: a_params: {}>".format(self.a_params)
+
 
 class RespZKPChallenge:
     """
@@ -35,6 +38,9 @@ class RespZKPChallenge:
     """
     def __init__(self, e_s):
         self.e_s = e_s
+
+    def __repr__(self):
+        return "<RespZKPChallenge: e_s: {}>".format(self.e_s)
 
 
 class ReqZKPVerify:
@@ -44,6 +50,9 @@ class ReqZKPVerify:
     def __init__(self, e_params, z_params):
         self.e_params = e_params
         self.z_params = z_params
+
+    def __repr__(self):
+        return "<ReqZKPVerify: e_params: {}, z_params: {}>".format(self.e_params, self.z_params)
 
 
 class RespCastVoteSuccess:

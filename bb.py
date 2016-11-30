@@ -155,8 +155,6 @@ def _handleZKP(msg, conn, state, pk):
     e_max = zkp.compute_e_max(pk.n)
     u_params = zkp.compute_u_params(msg.enc_vote, inv_gmk_params, pk.n_sq)
 
-    # for i to 50
-    # TODO: actually loop
     # ask for commitment
     print("BB: requesting ZKP commitment")
     common.write_message(conn, RespZKPProvideCommitment())
@@ -165,23 +163,26 @@ def _handleZKP(msg, conn, state, pk):
         return False
     # read commitment
     a_params = req_challenge.a_params
-    e_s = zkp.select_e_s(e_max)
-    print("BB: sending ZKP challenge")
-    # send challenge
-    resp_challenge = RespZKPChallenge(e_s)
-    common.write_message(conn, resp_challenge)
-    # read response
-    print("BB: verifying ZKP")
-    req_verification = common.read_message(conn)
-    if not isinstance(req_verification, ReqZKPVerify):
-        return False
-    e_params = req_verification.e_params
-    z_params = req_verification.z_params
-    # verify
-    if not zkp.verify(e_max, e_s, a_params, e_params, z_params, u_params, pk):
-        print("ZKP Verification failed")
-        return False
-    # continue if passed
+
+    # challenge loop
+    for i in range(config.ZKP_ITERATIONS):
+        e_s = zkp.select_e_s(e_max)
+        print("BB: sending ZKP challenge")
+        # send challenge
+        resp_challenge = RespZKPChallenge(e_s)
+        common.write_message(conn, resp_challenge)
+        # read response
+        print("BB: verifying ZKP")
+        req_verification = common.read_message(conn)
+        if not isinstance(req_verification, ReqZKPVerify):
+            return False
+        e_params = req_verification.e_params
+        z_params = req_verification.z_params
+        # verify
+        if not zkp.verify(e_max, e_s, a_params, e_params, z_params, u_params, pk):
+            print("ZKP Verification failed")
+            return False
+        # continue if passed
 
     return True
 

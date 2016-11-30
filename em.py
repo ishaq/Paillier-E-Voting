@@ -142,7 +142,7 @@ def _handleReqBlindSign(msg, conn, state):
         return
     # already got a signed vote
     elif msg.voter_id in state.signed_voters.keys():
-        common.write_message(conn, common.RespError("Voter already got a signed vote, will not sign another one"))
+        common.write_message(conn, common.RespError("Voter already got a signed vote, will not sign again"))
         return
 
     # Sign the vote

@@ -45,19 +45,20 @@ vote_i, w, a_params, z_params, e_params = zkp.compute_pre_commitment_params(msg,
 
 # Prover sends over a_k (including a_i)
 
-# VERIFIER
-print("VERIFIER")
-e_s = zkp.select_e_s(e_max)
+for i in range(10):
+    # VERIFIER
+    print("VERIFIER")
+    e_s = zkp.select_e_s(e_max)
 
-# PROVER
-print("PROVER")
-# Prover computes e_i, z_i
-e_params, z_params = zkp.compute_challenge_response_params(vote_i, e_max, e_s, e_params, z_params, w, rand, pk)
+    # PROVER
+    print("PROVER")
+    # Prover computes e_i, z_i
+    e_params, z_params = zkp.compute_challenge_response_params(vote_i, e_max, e_s, e_params, z_params, w, rand, pk)
 
-# Prover sends all e_params and all z_params
-# VERIFIER
-print("PROVER")
-# Verifier checks that e_is add to to e_s
-zkp_result = zkp.verify(e_max, e_s, a_params, e_params, z_params, u_params, pk)
-print("ZKP: {}".format(zkp_result))
+    # Prover sends all e_params and all z_params
+    # VERIFIER
+    print("PROVER")
+    # Verifier checks that e_is add to to e_s
+    zkp_result = zkp.verify(e_max, e_s, a_params, e_params, z_params, u_params, pk)
+    print("ZKP: {}".format(zkp_result))
 
