@@ -111,17 +111,17 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
     # check that user hasn't already voted
     sha256 = SHA256.new()
     sha256.update(str(msg.signed_enc_vote).encode("utf-8"))
-    vote_hash = sha256.digest()
-    if vote_hash in state.counted_vote_hashes.keys():
+    vote_hash = sha256.hexdigest()
+    if vote_hash in state.counted_votes.keys():
         common.write_message(conn, common.RespError("Already counted this vote"))
         return
 
     # all checks passed, cast the vote
     state.encrypted_sums = paillier.e_add(pub_keys.paillier_pub_key, state.encrypted_sums, msg.enc_vote)
-    state.counted_vote_hashes[vote_hash] = True
+    state.counted_votes[vote_hash] = msg.enc_vote
     resp = RespCastVoteSuccess()
 
-    if len(state.counted_vote_hashes.keys()) == config.NUM_VOTERS:
+    if len(state.counted_votes.keys()) == config.NUM_VOTERS:
         print("All voters have voted.")
         _handleReqCloseVoting(msg, conn, state)
         resp.is_voting_complete = True
@@ -184,11 +184,11 @@ class BulletinBoardState():
     """
     def __init__(self):
         self.voting_in_progress = True
-        self.counted_vote_hashes = {}
+        self.counted_votes = {}
         self.encrypted_sums = None
 
     def __str__(self):
-        return "<BulletinBoardState: {}, {}, {}>".format(self.voting_in_progress, self.counted_vote_hashes, \
+        return "<BulletinBoardState: {}, {}, {}>".format(self.voting_in_progress, self.counted_votes,
                                                          self.encrypted_sums)
 
 
