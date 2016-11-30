@@ -131,6 +131,8 @@ def _handleReqCastVote(msg, conn, state, pub_keys):
 
 def _handleReqCloseVoting(msg, conn, state):
     state.voting_in_progress = False
+    _write_bulletin_board(state)
+    print("\n\nBulletin Board has been written to :'{}'".format(config.BULLETIN_BOARD_FILENAME))
     sock_to_em = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock_to_em.connect(config.EM_ADDR)
     req = em_interface.ReqDisplayResults(state.encrypted_sums)
@@ -176,9 +178,21 @@ def _handleZKP(msg, conn, state, pk):
     return True
 
 
+def _write_bulletin_board(state):
+    with open(config.BULLETIN_BOARD_FILENAME, mode='w', encoding='utf-8') as f:
+        f.write('BULLETIN BOARD\n\n')
+        f.write('Encrypted Tally: {}\n'.format(state.encrypted_sums))
+        f.write("\n")
+        f.write("{:>4}\t{:<65}\t{}\n".format("#", "HASH", "ENCRYPTED VOTE"))
+        i = 1
+        for k, v in state.counted_votes.items():
+            f.write("{:>4}\t{:<65}\t{}\n".format(i, k, v))
+            i += 1
+
+
 # -- Bulletin Board State
 
-class BulletinBoardState():
+class BulletinBoardState:
     """
     A model to encapsulate Bulletin Board (BB) state
     """

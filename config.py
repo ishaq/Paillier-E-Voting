@@ -26,3 +26,6 @@ ZKP_ITERATIONS = 5
 """Name of the file containing election results"""
 ELECTION_RESULTS_FILENAME = "election_results.txt"
 
+"""Name of the file containing bulletin board"""
+BULLETIN_BOARD_FILENAME = "bulletin_board.txt"
+
