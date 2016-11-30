@@ -158,18 +158,24 @@ def _handleReqDisplayResults(msg, conn, state):
     print("Decrypted Results: {} ({:b})".format(decrypted_results, decrypted_results))
     candidate_votes = [0] * config.NUM_CANDIDATES
     mask = pow(2, config.NUM_VOTERS.bit_length()) - 1
-    winner_votes_count = -1
-    winner_index = -1
+
     for i in range(config.NUM_CANDIDATES):
         votes_count = (decrypted_results >> (i * config.NUM_VOTERS.bit_length())) & mask
         print("{}: votes:{} ({:b})".format(i, votes_count, votes_count))
         candidate_votes[i] = votes_count
-        if votes_count > winner_votes_count:
-            winner_votes_count = votes_count
-            winner_index = i
 
     print("Candidate Votes: {}".format(candidate_votes))
-    print("Winner is Candidate: {}".format(winner_index))
+
+    max_votes = max(candidate_votes)
+    winner_indices = []
+    for i in range(config.NUM_CANDIDATES):
+        if max_votes == candidate_votes[i]:
+            winner_indices.append(i)
+
+    if len(winner_indices) > 1:
+        print("We have a tie between candidates: {}".format(winner_indices))
+    else:
+        print("Winner is candidate: {}".format(winner_indices[0]))
 
 
 class ElectionBoardState:
