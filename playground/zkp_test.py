@@ -57,6 +57,8 @@ bits_per_candidate = NUM_VOTERS.bit_length()
 key_size = NUM_CANDIDATES * bits_per_candidate
 if key_size % 2 == 1:
     key_size += 1
+if key_size < 128:
+    key_size = 128
 
 sk, pk = paillier.generate_keypair(key_size)
 print("bits_per_candidate: {}, key_size: {}, {}, {}".format(bits_per_candidate, key_size, sk, pk))
@@ -133,10 +135,9 @@ print("PROVER")
 # Prover computes e_i, z_i
 e_sum = 0
 for e in e_params:
-    e_sum += e
+    e_sum = (e_sum + e) % e_max
 
-e_sum %= e_max
-e_params[vote_i] = e_max - e_sum
+e_params[vote_i] = (e_s - e_sum) % e_max
 print("e_i: {}".format(e_params[vote_i]))
 z_params[vote_i] = (w * pow(rand, e_params[vote_i], pk.n_sq)) % pk.n_sq
 print("z_i: {}".format(z_params[vote_i]))
@@ -150,9 +151,9 @@ print("PROVER")
 # Verifier checks that e_is add to to e_s
 e_sum = 0
 for e in e_params:
-    e_sum += e
+    e_sum = (e_sum + e) % e_max
 
-print("e_sum: {}, correct: {}".format(e_sum, (e_sum % e_max) == 0))
+print("e_sum: {}, correct: {}".format(e_sum, (e_sum % e_max) == e_s))
 # and the equation z_params[i]^n = u_params[i]^e_params[i] * a_params[i] holds
 well_formed_vote = True
 for i in range(NUM_CANDIDATES):
@@ -164,7 +165,7 @@ for i in range(NUM_CANDIDATES):
         break
 
 
-zkp_result = ((e_sum % e_max) == 0) and well_formed_vote
+zkp_result = ((e_sum % e_max) == e_s) and well_formed_vote
 print("ZKP Result: {}".format(zkp_result))
 
 
