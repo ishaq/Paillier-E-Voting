@@ -1,0 +1,15 @@
+ELECTION RESULTS
+
+Encrypted Tally:     31649195100983353895728064838154965200028066545083688262405685845939256528938
+
+CANDIDATE           	# OF VOTES
+0                   	        13
+1                   	        12
+2                   	         8
+3                   	         9
+4                   	         8
+
+
+
+RESULT:
+Candidate 0 won with 13 votes
