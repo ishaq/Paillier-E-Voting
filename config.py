@@ -15,7 +15,7 @@ EM_ADDR = ("localhost", 9000)
 BB_ADDR = ("localhost", 9010)
 
 """Minimum Paillier Key Size"""
-MIN_PAILLIER_KEY_SIZE = 128
+MIN_PAILLIER_KEY_SIZE = 1024
 
 '''Size of RSA Key'''
 RSA_KEY_SIZE = 3072
