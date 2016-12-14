@@ -9,6 +9,8 @@ import socket
 import pickle
 
 from Crypto.PublicKey import RSA
+from Crypto.Hash import SHA256
+from Crypto.Random import random
 from paillier import paillier
 
 import common
@@ -16,11 +18,29 @@ import config
 from em_interface import *
 
 
+class Voter:
+    def __init__(self, name, pw):
+        self.name = name
+        self.pw_salt = hex(random.randint(1 << 30, 1 << 40))
+        sha256 = SHA256.new()
+        sha256.update((pw + self.pw_salt).encode("utf-8"))
+        self.pw_hash = sha256.hexdigest()
+
+    def is_password_correct(self, pw):
+        sha256 = SHA256.new()
+        sha256.update((pw + self.pw_salt).encode("utf-8"))
+        return sha256.hexdigest() == self.pw_hash
+
+    def __repr__(self):
+        return "<Voter: name: {}, pw_salt: {}, pw_hash: {}>".format(self.name, self.pw_hash, self.pw_hash)
+
+
 ALL_VOTERS = {}
 for i in range(config.NUM_VOTERS):
     voter_name_and_pin = "Voter{0:02d}".format(i)
-    ALL_VOTERS[voter_name_and_pin] = voter_name_and_pin
+    ALL_VOTERS[voter_name_and_pin] = Voter(voter_name_and_pin, voter_name_and_pin)
 
+print("All Voters: {}".format(ALL_VOTERS))
 
 def setup():
     """
@@ -130,7 +150,7 @@ def _handleReqBlindSign(msg, conn, state):
         common.write_message(conn, common.RespError("Invalid Voter or PIN"))
         return
     # pin is not correct
-    elif not ALL_VOTERS[msg.voter_id] == msg.voter_pin:
+    elif not ALL_VOTERS[msg.voter_id].is_password_correct(msg.voter_pin):
         common.write_message(conn, common.RespError("Invalid Voter or PIN"))
         return
     # already got a signed vote
