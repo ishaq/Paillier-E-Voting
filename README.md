@@ -54,5 +54,5 @@ Voter IDs are of the pattern `Voter00`, `Voter01`, `Voter02`, etc. Voter's PIN i
 * Daniel Park (parkd5@rpi.edu)
 
 ## Credits
-* [PyCrypto](https://pypi.python.org/pypi/pycrypto) is used for RSA encryption and SHA-256 hashes
+* [PyCrypto](https://pypi.python.org/pypi/pycrypto) is used for RSA encryption and SHA-256 hashes. PyCrypto is a dead project. We shall, if time permitted, shift to [cryptography](https://pypi.python.org/pypi/cryptography).
 * [Paillier](https://github.com/mikeivanov/paillier) is used for Paillier homomorphic encryption. We modified it a considerably to fix bugs and make it work with Python 3.

@@ -15,6 +15,8 @@ EM_ADDR = ("localhost", 9000)
 BB_ADDR = ("localhost", 9010)
 
 """Minimum Paillier Key Size"""
+# FIXME: The key size in production should be at least 1024. A shorter key
+# FIXME: length makes a demo easier though (by not taking forever to do computations)
 MIN_PAILLIER_KEY_SIZE = 1024
 
 '''Size of RSA Key'''

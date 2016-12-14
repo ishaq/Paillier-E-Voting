@@ -140,7 +140,7 @@ def _handleReqBlindSign(msg, conn, state):
 
     # Sign the vote
     state.signed_voters[msg.voter_id] = True
-    blind_sign = state.rsa_private_key.sign(msg.blinded_ecnrypted_vote, 0)
+    blind_sign = state.rsa_private_key.sign(msg.blinded_encrypted_vote, 0)
     resp = RespBlindSign(blind_sign[0])
     common.write_message(conn, resp)
 
